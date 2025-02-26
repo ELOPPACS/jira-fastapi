@@ -8,6 +8,16 @@ from dotenv import load_dotenv
 load_dotenv() 
 app = FastAPI()
 
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Only allows your GitHub Pages frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # JIRA Configuration (Update These)
 JIRA_BASE_URL = "https://patatabullida987.atlassian.net/"  
 JIRA_USERNAME = "patatabullida987@gmail.com"  
