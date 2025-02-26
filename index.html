@@ -112,8 +112,8 @@
             return;
         }
 
-        const tableBody = $("#incidentsTable tbody");
-        tableBody.empty();  // Clear table before adding new rows
+        const table = $("#incidentsTable").DataTable(); // Reference the DataTable instance
+        table.clear().draw(); // Clear existing data before loading new ones
 
         try {
             const response = await fetch(`${API_BASE_URL}/sub-incidents/${selectedEpic}`);
@@ -123,47 +123,53 @@
             console.log("🔍 Full API Response:", incidents);
 
             if (incidents.length === 0) {
-                tableBody.append(`<tr><td colspan="7" class="text-center">No sub-incidents found.</td></tr>`);
+                alert("No sub-incidents found.");
                 return;
             }
 
-            // Create an array of rows
-            let rows = [];
+            // Add each row to DataTable dynamically
             incidents.forEach((incident, index) => {
                 console.log(`🔎 Incident ${index + 1}:`, incident);
-                rows.push(`
-                    <tr>
-                        <td>${incident["Sub-Incident Key"]}</td>
-                        <td>${incident["Title"]}</td>
-                        <td>${incident["Status"]}</td>
-                        <td>${incident["Assignee"] || "Unassigned"}</td>
-                        <td>${incident["Created"]}</td>
-                        <td>${incident["Updated"]}</td>
-                        <td>${incident["Due Date"] || "N/A"}</td>
-                    </tr>
-                `);
+                table.row.add([
+                    incident["Sub-Incident Key"],
+                    incident["Title"],
+                    incident["Status"],
+                    incident["Assignee"] || "Unassigned",
+                    incident["Created"],
+                    incident["Updated"],
+                    incident["Due Date"] || "N/A"
+                ]);
             });
 
-            // Append all rows at once (faster performance)
-            tableBody.append(rows.join(""));
-
-            // Destroy existing DataTable instance if it exists
-            if ($.fn.DataTable.isDataTable("#incidentsTable")) {
-                $("#incidentsTable").DataTable().destroy();
-            }
-
-            // Re-initialize DataTables after adding new rows
-            $("#incidentsTable").DataTable({
-                paging: true,
-                searching: true,
-                ordering: true,
-                destroy: true  // Ensure a fresh instance is created
-            });
+            // Draw the updated table
+            table.draw();
 
         } catch (error) {
             console.error("❌ Error fetching sub-incidents:", error);
         }
     }
+
+    // Initialize DataTable properly
+    $(document).ready(() => {
+        loadEpics();
+
+        $("#incidentsTable").DataTable({
+            paging: true,
+            searching: true,
+            ordering: true,
+            destroy: true,
+            columns: [
+                { title: "ID" },
+                { title: "Title" },
+                { title: "Status" },
+                { title: "Assignee" },
+                { title: "Created" },
+                { title: "Updated" },
+                { title: "Due Date" }
+            ]
+        });
+    });
+
 
 
 
