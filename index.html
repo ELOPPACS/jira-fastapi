@@ -118,15 +118,17 @@
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
             const incidents = await response.json();
-            console.log("🔍 API Response:", incidents); // Debugging log
+            console.log("🔍 Full API Response:", incidents); // Debugging log
 
-            if (incidents.length === 0) {
+            if (!Array.isArray(incidents) || incidents.length === 0) {
+                console.warn("⚠️ No valid sub-incidents found.");
                 tableBody.append(`<tr><td colspan="5" class="text-center">No sub-incidents found.</td></tr>`);
                 return;
             }
 
-            incidents.forEach(incident => {
-                console.log("🔍 Incident Data:", incident); // Debugging log
+            // Loop through incidents and print each one
+            incidents.forEach((incident, index) => {
+                console.log(`🔎 Incident ${index + 1}:`, incident); // Debugging log
 
                 tableBody.append(`
                     <tr>
@@ -151,6 +153,7 @@
             console.error("❌ Error fetching sub-incidents:", error);
         }
     }
+
 
 
     // Load Epics on Page Load
