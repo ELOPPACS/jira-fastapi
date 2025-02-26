@@ -10,12 +10,17 @@ app = FastAPI()
 
 from fastapi.middleware.cors import CORSMiddleware
 
+origins = [
+    "https://eloppacs.github.io",  # Your frontend URL
+    "https://eloppacs.github.io/", # Alternative format
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Only allows your GitHub Pages frontend
+    allow_origins=origins,  # Allow only GitHub Pages
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
 )
 
 # JIRA Configuration (Update These)
@@ -76,3 +81,8 @@ def fetch_epics():
 @app.get("/sub-incidents/{epic_key}")
 def fetch_sub_incidents(epic_key: str):
     return get_sub_incidents(epic_key)
+
+
+@app.get("/")
+async def root():
+    return {"message": "JIRA API is running!"}
