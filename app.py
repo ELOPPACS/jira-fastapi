@@ -4,6 +4,7 @@ from requests.auth import HTTPBasicAuth
 import pandas as pd
 import os
 from dotenv import load_dotenv
+from fastapi.responses import Response
 
 load_dotenv() 
 app = FastAPI()
@@ -91,3 +92,8 @@ def fetch_sub_incidents(epic_key: str):
     return get_sub_incidents(epic_key)
 
 
+
+@app.head("/")
+def handle_head_request():
+    """Responds to HEAD requests with an empty 200 OK response."""
+    return Response(status_code=200)
