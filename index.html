@@ -118,33 +118,30 @@
             if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
             const incidents = await response.json();
-            console.log("🔍 Full API Response:", incidents); // Debugging log
 
-            if (!Array.isArray(incidents) || incidents.length === 0) {
-                console.warn("⚠️ No valid sub-incidents found.");
-                tableBody.append(`<tr><td colspan="5" class="text-center">No sub-incidents found.</td></tr>`);
+            console.log("🔍 Full API Response:", incidents);
+
+            if (incidents.length === 0) {
+                tableBody.append(`<tr><td colspan="7" class="text-center">No sub-incidents found.</td></tr>`);
                 return;
             }
 
-            // Loop through incidents and print each one
             incidents.forEach((incident, index) => {
-                console.log(`🔎 Incident ${index + 1}:`, incident); // Debugging log
+                console.log(`🔎 Incident ${index + 1}:`, incident);
 
+                // Insert into the table using bracket notation
                 tableBody.append(`
                     <tr>
-                        <td>${incident.id || "N/A"}</td>
-                        <td>${incident.title || "N/A"}</td>
-                        <td>${incident.status || "N/A"}</td>
-                        <td>${incident.assignee ? incident.assignee : "Unassigned"}</td>
-                        <td>${incident.created || "N/A"}</td>
+                        <td>${incident["Sub-Incident Key"] ?? "N/A"}</td>
+                        <td>${incident["Title"] ?? "N/A"}</td>
+                        <td>${incident["Status"] ?? "N/A"}</td>
+                        <td>${incident["Assignee"] ?? "Unassigned"}</td>
+                        <td>${incident["Created"] ?? "N/A"}</td>
+                        <td>${incident["Updated"] ?? "N/A"}</td>
+                        <td>${incident["Due Date"] ?? "N/A"}</td>
                     </tr>
                 `);
             });
-
-            // Destroy DataTable if already initialized
-            if ($.fn.DataTable.isDataTable("#incidentsTable")) {
-                $("#incidentsTable").DataTable().destroy();
-            }
 
             // Initialize DataTables (Enhances Table)
             $("#incidentsTable").DataTable();
@@ -153,6 +150,7 @@
             console.error("❌ Error fetching sub-incidents:", error);
         }
     }
+
 
 
 
