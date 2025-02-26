@@ -113,7 +113,7 @@
         }
 
         const tableBody = $("#incidentsTable tbody");
-        tableBody.empty();
+        tableBody.empty();  // Clear table before adding new rows
 
         try {
             const response = await fetch(`${API_BASE_URL}/sub-incidents/${selectedEpic}`);
@@ -127,10 +127,11 @@
                 return;
             }
 
-            // Populate table with correct number of columns
+            // Create an array of rows
+            let rows = [];
             incidents.forEach((incident, index) => {
                 console.log(`🔎 Incident ${index + 1}:`, incident);
-                tableBody.append(`
+                rows.push(`
                     <tr>
                         <td>${incident["Sub-Incident Key"]}</td>
                         <td>${incident["Title"]}</td>
@@ -143,22 +144,27 @@
                 `);
             });
 
+            // Append all rows at once (faster performance)
+            tableBody.append(rows.join(""));
+
             // Destroy existing DataTable instance if it exists
             if ($.fn.DataTable.isDataTable("#incidentsTable")) {
                 $("#incidentsTable").DataTable().destroy();
             }
 
-            // Initialize DataTables
+            // Re-initialize DataTables after adding new rows
             $("#incidentsTable").DataTable({
                 paging: true,
                 searching: true,
-                ordering: true
+                ordering: true,
+                destroy: true  // Ensure a fresh instance is created
             });
 
         } catch (error) {
             console.error("❌ Error fetching sub-incidents:", error);
         }
     }
+
 
 
 
