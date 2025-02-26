@@ -1,182 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JIRA Dashboard</title>
-    
-    <!-- Bootstrap for Styling -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>JIRA Dashboard</title>
+  
+  <!-- Bootstrap for Styling -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" />
 
-    <!-- Select2 for Searchable Dropdowns -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
+  <!-- DataTables for Interactive Tables -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
 
-    <!-- DataTables for Interactive Tables -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1000px;
-        }
-        h1 {
-            margin-bottom: 20px;
-        }
-        #incidentsTable {
-            width: 100%;
-        }
-    </style>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1000px;
+    }
+    h1 {
+      margin-bottom: 20px;
+    }
+    #incidentsTable {
+      width: 100%;
+    }
+  </style>
 </head>
 <body class="bg-light">
+  <div class="container bg-white p-4 rounded shadow">
+    <h1 class="text-center">JIRA Dashboard</h1>
 
-    <div class="container bg-white p-4 rounded shadow">
-        <h1 class="text-center">JIRA Dashboard</h1>
-
-        <!-- Epic Selection -->
-        <div class="mb-3">
-            <label for="epicSelect" class="form-label"><strong>Select an Epic:</strong></label>
-            <select id="epicSelect" class="form-select"></select>
-        </div>
-
-        <!-- Fetch Button -->
-        <button class="btn btn-primary mb-3" onclick="fetchSubIncidents()">Get Sub-Incidents</button>
-
-        <!-- Data Table -->
-        <h2>Sub-Incidents</h2>
-        <table id="incidentsTable" class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Title</th>
-                    <th>Status</th>
-                    <th>Assignee</th>
-                    <th>Created</th>
-                </tr>
-            </thead>
-            <tbody></tbody>
-        </table>
+    <!-- Epic Selection -->
+    <div class="mb-3">
+      <label for="epicSelect" class="form-label"><strong>Select an Epic:</strong></label>
+      <!-- Plain HTML select (no Select2) -->
+      <select id="epicSelect" class="form-select"></select>
     </div>
 
-    <!-- jQuery (Ensure it's loaded before Select2) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Fetch Button -->
+    <button class="btn btn-primary mb-3" onclick="fetchSubIncidents()">Get Sub-Incidents</button>
 
-    <!-- Bootstrap (After jQuery) -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Data Table -->
+    <h2>Sub-Incidents</h2>
+    <table id="incidentsTable" class="table table-bordered">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Title</th>
+          <th>Status</th>
+          <th>Assignee</th>
+          <th>Created</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
 
-    <!-- Select2 (Ensure it loads after jQuery) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.1.0/js/select2.min.js"></script>
+  <!-- jQuery (needed for DataTables) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- DataTables -->
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    
-    <script>
-        const API_BASE_URL = "https://jira-fastapi.onrender.com";  
+  <!-- Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-        // Ensure localStorage access doesn't cause issues on GitHub Pages
-        try {
-            localStorage.setItem("test", "test");
-            localStorage.removeItem("test");
-        } catch (error) {
-            console.warn("⚠️ Local Storage access is restricted. This may affect caching features.");
-        }
+  <!-- DataTables -->
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  
+  <script>
+    const API_BASE_URL = "https://jira-fastapi.onrender.com";  
 
-        // Fetch Epics on Page Load
-        async function loadEpics() {
-            try {
-                const response = await fetch(`${API_BASE_URL}/epics`);
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+    // Ensure localStorage access doesn't cause issues on GitHub Pages
+    try {
+      localStorage.setItem("test", "test");
+      localStorage.removeItem("test");
+    } catch (error) {
+      console.warn("⚠️ Local Storage access is restricted. This may affect caching features.");
+    }
 
-                const epics = await response.json();
-                const select = $("#epicSelect");
+    // Fetch Epics on Page Load
+    async function loadEpics() {
+      try {
+        const response = await fetch(`${API_BASE_URL}/epics`);
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
 
-                // Clear previous options (prevents duplicates)
-                select.empty();
-                select.append(new Option("Select an Epic", "", true, true));
+        const epics = await response.json();
+        const select = $("#epicSelect");
 
-                // Populate dropdown
-                Object.keys(epics).forEach(epicId => {
-                    select.append(new Option(`${epicId} - ${epics[epicId]}`, epicId));
-                });
+        // Clear previous options (prevents duplicates)
+        select.empty();
+        select.append(new Option("Select an Epic", "", true, true));
 
-                console.log("✅ Epics Loaded Successfully!");
-
-            } catch (error) {
-                console.error("Error fetching epics:", error);
-            }
-        }
-
-        // Fetch Sub-Incidents
-        async function fetchSubIncidents() {
-            const selectedEpic = $("#epicSelect").val();
-            if (!selectedEpic) {
-                alert("Please select an Epic first!");
-                return;
-            }
-
-            const tableBody = $("#incidentsTable tbody");
-            tableBody.empty();
-
-            try {
-                const response = await fetch(`${API_BASE_URL}/sub-incidents/${selectedEpic}`);
-                if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-
-                const incidents = await response.json();
-
-                if (incidents.length === 0) {
-                    tableBody.append(`<tr><td colspan="5" class="text-center">No sub-incidents found.</td></tr>`);
-                    return;
-                }
-
-                incidents.forEach(incident => {
-                    tableBody.append(`
-                        <tr>
-                            <td>${incident.id}</td>
-                            <td>${incident.title}</td>
-                            <td>${incident.status}</td>
-                            <td>${incident.assignee || "Unassigned"}</td>
-                            <td>${incident.created}</td>
-                        </tr>
-                    `);
-                });
-
-                // Destroy DataTable if already initialized
-                if ($.fn.DataTable.isDataTable("#incidentsTable")) {
-                    $("#incidentsTable").DataTable().destroy();
-                }
-
-                // Initialize DataTables (Enhances Table)
-                $("#incidentsTable").DataTable();
-
-            } catch (error) {
-                console.error("Error fetching sub-incidents:", error);
-            }
-        }
-
-        // Ensure Select2 is initialized properly
-        $(document).ready(() => {
-            console.log("✅ Document Ready - Loading Epics...");
-            loadEpics();
-
-            // Initialize Select2
-            if ($.fn.select2) {
-                console.log("✅ Select2 Loaded Successfully!");
-                $("#epicSelect").select2({ width: '100%' });
-            } else {
-                console.error("❌ Select2 Not Found! Retrying in 500ms...");
-                setTimeout(() => {
-                    if ($.fn.select2) {
-                        console.log("✅ Select2 Loaded on Retry!");
-                        $("#epicSelect").select2({ width: '100%' });
-                    } else {
-                        console.error("❌ Select2 Still Not Found! Check script loading.");
-                    }
-                }, 500); // Retry after 500ms
-            }
+        // Populate dropdown with epics
+        Object.keys(epics).forEach(epicId => {
+          select.append(new Option(`${epicId} - ${epics[epicId]}`, epicId));
         });
-    </script>
 
+        console.log("✅ Epics Loaded Successfully!");
+
+      } catch (error) {
+        console.error("Error fetching epics:", error);
+      }
+    }
+
+    // Fetch Sub-Incidents
+    async function fetchSubIncidents() {
+      const selectedEpic = $("#epicSelect").val();
+      if (!selectedEpic) {
+        alert("Please select an Epic first!");
+        return;
+      }
+
+      const tableBody = $("#incidentsTable tbody");
+      tableBody.empty();
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/sub-incidents/${selectedEpic}`);
+        if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+
+        const incidents = await response.json();
+
+        if (incidents.length === 0) {
+          tableBody.append(`<tr><td colspan="5" class="text-center">No sub-incidents found.</td></tr>`);
+          return;
+        }
+
+        incidents.forEach(incident => {
+          tableBody.append(`
+            <tr>
+              <td>${incident.id}</td>
+              <td>${incident.title}</td>
+              <td>${incident.status}</td>
+              <td>${incident.assignee || "Unassigned"}</td>
+              <td>${incident.created}</td>
+            </tr>
+          `);
+        });
+
+        // Destroy DataTable if already initialized
+        if ($.fn.DataTable.isDataTable("#incidentsTable")) {
+          $("#incidentsTable").DataTable().destroy();
+        }
+
+        // Initialize DataTables (Enhances Table)
+        $("#incidentsTable").DataTable();
+
+      } catch (error) {
+        console.error("Error fetching sub-incidents:", error);
+      }
+    }
+
+    // Load Epics on Page Load
+    $(document).ready(() => {
+      console.log("✅ Document Ready - Loading Epics...");
+      loadEpics();
+    });
+  </script>
 </body>
 </html>
